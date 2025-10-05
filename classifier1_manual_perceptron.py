@@ -88,6 +88,49 @@ class ManualPerceptron:
         probs = 1 / (1 + np.exp(-output))
         return probs
 
+    def train(self, X_train, y_train, X_test, y_test, learning_rate=0.01, epochs=100):
+        """
+        Train the perceptron using gradient descent
+        """
+        print(f"\nTraining perceptron for {epochs} epochs with lr={learning_rate}")
+
+        train_accuracies = []
+        test_accuracies = []
+
+        for epoch in range(epochs):
+            # Shuffle training data
+            indices = np.random.permutation(len(X_train))
+            X_shuffled = X_train[indices]
+            y_shuffled = y_train[indices]
+
+            # Train on each sample
+            for x, y_true in zip(X_shuffled, y_shuffled):
+                # Forward pass
+                output = self.forward(x)
+                pred = 1 if output > 0 else 0
+
+                # Calculate error
+                error = y_true - pred
+
+                # Update weights and bias
+                self.weights += learning_rate * error * x
+                self.bias += learning_rate * error
+
+            # Evaluate every 10 epochs
+            if (epoch + 1) % 10 == 0:
+                train_pred = self.predict(X_train)
+                train_acc = np.mean(train_pred == y_train) * 100
+
+                test_pred = self.predict(X_test)
+                test_acc = np.mean(test_pred == y_test) * 100
+
+                train_accuracies.append(train_acc)
+                test_accuracies.append(test_acc)
+
+                print(f"Epoch {epoch+1:3d}: Train Acc = {train_acc:6.2f}%, Test Acc = {test_acc:6.2f}%")
+
+        return train_accuracies, test_accuracies
+
     def visualize_weights(self):
         """Visualize the weight matrix to understand what the perceptron learned"""
         img_size = int(np.sqrt(len(self.weights)))
